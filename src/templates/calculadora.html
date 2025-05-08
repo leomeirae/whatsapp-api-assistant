@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculadora de Preços da API do WhatsApp</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='calculadora.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+</head>
+<body>
+    <div class="calculator-container">
+        <div class="calculator-header">
+            <h1>Calculadora de Preços da API Oficial do WhatsApp</h1>
+            <p class="subtitle">Calcule quanto custará usar a API do WhatsApp para sua empresa</p>
+            <a href="/" class="back-link"><i class="fas fa-arrow-left"></i> Voltar para o Assistente</a>
+        </div>
+
+        <div class="calculator-instructions">
+            <h2>📋 Como usar a Calculadora</h2>
+
+            <div class="instruction-item">
+                <h3>Escolha o tipo de conversa</h3>
+                <ul>
+                    <li><strong>Marketing</strong> (promoções, ofertas, novidades)</li>
+                    <li><strong>Utilitária</strong> (atualizações de pedidos, suporte, informações úteis)</li>
+                    <li><strong>Autenticação</strong> (confirmação de identidade, envio de códigos)</li>
+                </ul>
+            </div>
+
+            <div class="instruction-item">
+                <h3>Ajuste facilmente</h3>
+                <p>Você pode usar as setas (+ / -) ou arrastar a barra para definir o número de mensagens.</p>
+            </div>
+
+            <div class="instruction-item">
+                <h3>Veja o valor em tempo real</h3>
+                <p>O subtotal de cada categoria e o valor total serão atualizados automaticamente conforme você altera a quantidade.</p>
+            </div>
+
+            <div class="instruction-item">
+                <h3>Exportar orçamento</h3>
+                <p>Clique em "Exportar Orçamento" para gerar um PDF com o resumo do seu cálculo.</p>
+            </div>
+        </div>
+
+        <div class="calculator-box">
+            <h2>Calculadora de Preço Brasil</h2>
+
+            <div class="calculator-item">
+                <div class="item-info">
+                    <h3>Conversas voltadas à marketing</h3>
+                    <p class="price">$0.0625 / 24 horas</p>
+                </div>
+                <div class="item-controls">
+                    <button class="control-btn decrease" data-type="marketing">-</button>
+                    <input type="range" min="0" max="10000" value="0" class="slider" id="marketing-slider">
+                    <input type="number" min="0" max="10000" value="0" class="number-input" id="marketing-input">
+                    <button class="control-btn increase" data-type="marketing">+</button>
+                </div>
+                <div class="item-total">
+                    <p>R$ <span id="marketing-total">0,00</span></p>
+                </div>
+            </div>
+
+            <div class="calculator-item">
+                <div class="item-info">
+                    <h3>Conversas Utilitárias</h3>
+                    <p class="price">$0.008 / 24 horas</p>
+                </div>
+                <div class="item-controls">
+                    <button class="control-btn decrease" data-type="utility">-</button>
+                    <input type="range" min="0" max="10000" value="0" class="slider" id="utility-slider">
+                    <input type="number" min="0" max="10000" value="0" class="number-input" id="utility-input">
+                    <button class="control-btn increase" data-type="utility">+</button>
+                </div>
+                <div class="item-total">
+                    <p>R$ <span id="utility-total">0,00</span></p>
+                </div>
+            </div>
+
+            <div class="calculator-item">
+                <div class="item-info">
+                    <h3>Conversas de Autenticação</h3>
+                    <p class="price">$0.0315 / 24 horas</p>
+                </div>
+                <div class="item-controls">
+                    <button class="control-btn decrease" data-type="auth">-</button>
+                    <input type="range" min="0" max="10000" value="0" class="slider" id="auth-slider">
+                    <input type="number" min="0" max="10000" value="0" class="number-input" id="auth-input">
+                    <button class="control-btn increase" data-type="auth">+</button>
+                </div>
+                <div class="item-total">
+                    <p>R$ <span id="auth-total">0,00</span></p>
+                </div>
+            </div>
+
+            <div class="calculator-total">
+                <h3>Total: R$ <span id="grand-total">0,00</span></h3>
+            </div>
+
+            <div class="calculator-actions">
+                <button id="export-btn" class="action-btn">
+                    <i class="fas fa-file-export"></i> Exportar Orçamento
+                </button>
+                <a href="https://wa.me/558197498268?text=Olá%2C%20gostaria%20de%20mais%20informações%20sobre%20a%20API%20do%20WhatsApp%20Business." class="action-btn contact-link" target="_blank">
+                    <i class="fab fa-whatsapp"></i> Falar com o Desenvolvedor
+                </a>
+            </div>
+        </div>
+
+        <div class="calculator-notes">
+            <p><strong>Nota:</strong> Os preços são baseados na tabela oficial da Meta para o Brasil e podem sofrer alterações. A cotação do dólar utilizada é atualizada diariamente.</p>
+            <p><strong>Importante:</strong> Esta calculadora serve apenas como referência. Para valores exatos, consulte a documentação oficial da Meta ou entre em contato com um representante.</p>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="{{ url_for('static', filename='calculadora.js') }}"></script>
+</body>
+</html>
