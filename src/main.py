@@ -16,8 +16,8 @@ from flask import Flask, request, jsonify, render_template
 # Não altere o nome do aplicativo Flask!
 app = Flask("whatsapp_expert_chat", template_folder=os.path.join(os.path.dirname(__file__), 'templates'), static_folder=os.path.join(os.path.dirname(__file__), 'static'))
 
-# Configuração da chave da API OpenAI (idealmente via variável de ambiente)
-OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY", "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")
+# Configuração da chave da API OpenAI (via variável de ambiente)
+OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY", "")
 OPENAI_MODEL = "gpt-4o-mini" # Modelo a ser utilizado
 
 KNOWLEDGE_BASE_FILES = [
