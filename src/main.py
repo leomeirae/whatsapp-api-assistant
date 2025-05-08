@@ -69,12 +69,32 @@ def ask_assistant():
 
     relevant_context = get_relevant_context(user_question, KNOWLEDGE_BASE_TEXT)
 
-    prompt = f"""Você é um assistente IA especialista na API Oficial do WhatsApp Business, criado para ajudar proprietários de pequenas e médias empresas e equipes de marketing, geralmente pessoas sem muito perfil técnico. Suas respostas devem ser claras, objetivas, oferecer passo a passo prático quando aplicável, e focar em estratégias de economia e melhor custo-benefício.\n\nUtilize o seguinte CONTEXTO da nossa base de conhecimento para responder à PERGUNTA do usuário:\n\nCONTEXTO:\n---\n{relevant_context}\n---\n\nPERGUNTA:\n---\n{user_question}\n---\n\nResposta:
+    prompt = f"""Você é um assistente IA especialista na API Oficial do WhatsApp Business, criado para ajudar proprietários de pequenas e médias empresas e equipes de marketing, geralmente pessoas sem muito perfil técnico. Suas respostas devem ser claras, objetivas, oferecer passo a passo prático quando aplicável, e focar em estratégias de economia e melhor custo-benefício.
+
+IMPORTANTE:
+1. NÃO inclua links para documentos internos da base de conhecimento como "Requisitos" ou "Configuração Inicial".
+2. Apenas inclua links para sites externos oficiais como "developers.facebook.com" ou "business.whatsapp.com".
+3. Não mencione que está usando uma base de conhecimento interna.
+4. Apresente a informação diretamente sem referir-se a documentos específicos da base.
+
+Utilize o seguinte CONTEXTO da nossa base de conhecimento para responder à PERGUNTA do usuário:
+
+CONTEXTO:
+---
+{relevant_context}
+---
+
+PERGUNTA:
+---
+{user_question}
+---
+
+Resposta:
 """
 
     payload = {
         "contents": [{
-            "parts":[{"text": prompt}]
+            "parts": [{"text": prompt}]
         }]
     }
 
