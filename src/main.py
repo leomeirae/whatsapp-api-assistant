@@ -68,15 +68,8 @@ def calculadora():
     """Renderiza a página da calculadora de preços da API do WhatsApp."""
     return render_template("calculadora_new.html")
 
-@app.route("/ask", methods=["POST"])
-def ask_assistant():
-    """Recebe a pergunta do usuário e retorna a resposta do assistente Gemini."""
-    data = request.get_json()
-    user_question = data.get("question")
-
-    if not user_question:
-        return jsonify({"error": "Nenhuma pergunta fornecida."}), 400
-
+def process_question(user_question):
+    """Processa a pergunta do usuário e retorna a resposta do assistente."""
     if not KNOWLEDGE_BASE_TEXT:
         print("Aviso: Base de conhecimento está vazia. Respostas podem ser limitadas.")
 
@@ -143,11 +136,24 @@ PERGUNTA:
         for pattern in patterns:
             answer = re.sub(pattern, r'\1', answer, flags=re.IGNORECASE)
 
+        return {"answer": answer}
+
     except Exception as e:
         print(f"Erro ao chamar a API OpenAI: {e}")
-        answer = f"Desculpe, ocorreu um erro ao processar sua pergunta: {e}"
+        return {"error": f"Desculpe, ocorreu um erro ao processar sua pergunta: {e}"}
 
-    return jsonify({"answer": answer})
+
+@app.route("/ask", methods=["POST"])
+def ask_assistant():
+    """Recebe a pergunta do usuário e retorna a resposta do assistente."""
+    data = request.get_json()
+    user_question = data.get("question")
+
+    if not user_question:
+        return jsonify({"error": "Nenhuma pergunta fornecida."}), 400
+
+    result = process_question(user_question)
+    return jsonify(result)
 
 # Ponto de entrada principal para executar o aplicativo Flask
 # O aplicativo será executado em http://0.0.0.0:5000 por padrão
