@@ -24,28 +24,28 @@ app = Flask("whatsapp_expert_chat", template_folder=os.path.join(os.path.dirname
 OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY", "")
 OPENAI_MODEL = os.environ.get("OPENAI_MODEL", "gpt-4o-mini") # Modelo a ser utilizado
 
+# Diretório raiz do projeto
+ROOT_DIR = os.path.dirname(os.path.dirname(__file__))
+
 KNOWLEDGE_BASE_FILES = [
-    "../knowledge_base/base_conhecimento_whatsapp_api.md",
-    "../knowledge_base/estrategias_whatsapp_api.md",
-    "../knowledge_base/05_verificacao_empresas/verificacao_empresas_meta.md",
-    "../knowledge_base/05_verificacao_empresas/verificacao_whatsapp_business.md",
-    "../knowledge_base/05_verificacao_empresas/guia_passo_a_passo_verificacao.md"
+    os.path.join(ROOT_DIR, "knowledge_base/base_conhecimento_whatsapp_api.md"),
+    os.path.join(ROOT_DIR, "knowledge_base/estrategias_whatsapp_api.md"),
+    os.path.join(ROOT_DIR, "knowledge_base/05_verificacao_empresas/verificacao_empresas_meta.md"),
+    os.path.join(ROOT_DIR, "knowledge_base/05_verificacao_empresas/verificacao_whatsapp_business.md"),
+    os.path.join(ROOT_DIR, "knowledge_base/05_verificacao_empresas/guia_passo_a_passo_verificacao.md")
 ]
 
 def load_knowledge_base():
     """Carrega o conteúdo dos arquivos da base de conhecimento."""
     knowledge_content = ""
-    for file_path_relative in KNOWLEDGE_BASE_FILES:
-        # Constrói o caminho absoluto baseado no diretório de 'src'
-        base_dir = os.path.dirname(__file__) # Diretório 'src'
-        file_path_absolute = os.path.join(base_dir, file_path_relative)
+    for file_path in KNOWLEDGE_BASE_FILES:
         try:
-            with open(file_path_absolute, "r", encoding="utf-8") as f:
+            with open(file_path, "r", encoding="utf-8") as f:
                 knowledge_content += f.read() + "\n\n"
         except FileNotFoundError:
-            print(f"Aviso: Arquivo da base de conhecimento não encontrado: {file_path_absolute}")
+            print(f"Aviso: Arquivo da base de conhecimento não encontrado: {file_path}")
         except Exception as e:
-            print(f"Erro ao carregar {file_path_absolute}: {e}")
+            print(f"Erro ao carregar {file_path}: {e}")
     return knowledge_content
 
 # Carrega a base de conhecimento uma vez ao iniciar o app
