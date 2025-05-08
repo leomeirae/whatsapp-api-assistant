@@ -1,16 +1,64 @@
+from http.server import BaseHTTPRequestHandler
 import json
 
-# Função simples para testar a implantação na Vercel
-def handler(request):
-    """
-    Handler para funções serverless da Vercel
-    """
-    # Obter o caminho da URL
-    path = request.get('path', '/')
+class handler(BaseHTTPRequestHandler):
+    def do_GET(self):
+        """Handler para requisições GET"""
+        self.send_response(200)
+        self.send_header('Content-type', 'text/html')
+        self.end_headers()
 
-    # Resposta HTML básica para a página inicial
-    if path == '/' or path == '':
-        html = """
+        # Página inicial
+        if self.path == '/' or self.path == '':
+            html = self.get_index_html()
+        # Página da calculadora
+        elif self.path == '/calculadora':
+            html = self.get_calculadora_html()
+        # Página não encontrada
+        else:
+            self.send_response(404)
+            html = "Página não encontrada"
+
+        self.wfile.write(html.encode())
+        return
+
+    def do_POST(self):
+        """Handler para requisições POST"""
+        self.send_response(200)
+        self.send_header('Content-type', 'application/json')
+        self.end_headers()
+
+        # Rota para processar perguntas
+        if self.path == '/ask':
+            # Ler o corpo da requisição
+            content_length = int(self.headers['Content-Length'])
+            post_data = self.rfile.read(content_length)
+
+            try:
+                # Processar a pergunta
+                data = json.loads(post_data.decode())
+                question = data.get('question', '')
+
+                if not question:
+                    response = {'error': 'Nenhuma pergunta fornecida.'}
+                else:
+                    # Resposta temporária
+                    response = {
+                        'answer': 'Esta é uma resposta de teste do servidor Vercel. A integração com a API OpenAI será implementada em breve.'
+                    }
+            except Exception as e:
+                response = {'error': f'Erro ao processar a pergunta: {str(e)}'}
+
+            self.wfile.write(json.dumps(response).encode())
+        else:
+            self.send_response(404)
+            self.wfile.write(json.dumps({'error': 'Endpoint não encontrado'}).encode())
+
+        return
+
+    def get_index_html(self):
+        """Retorna o HTML da página inicial"""
+        return """
         <!DOCTYPE html>
         <html>
         <head>
@@ -96,25 +144,10 @@ def handler(request):
         </body>
         </html>
         """
-        return {
-            'statusCode': 200,
-            'headers': {'Content-Type': 'text/html'},
-            'body': html
-        }
 
-    # Resposta para a rota /ask
-    elif path == '/ask':
-        return {
-            'statusCode': 200,
-            'headers': {'Content-Type': 'application/json'},
-            'body': json.dumps({
-                'answer': 'Esta é uma resposta de teste do servidor Vercel. A integração com a API OpenAI será implementada em breve.'
-            })
-        }
-
-    # Resposta para a rota /calculadora
-    elif path == '/calculadora':
-        html = """
+    def get_calculadora_html(self):
+        """Retorna o HTML da página da calculadora"""
+        return """
         <!DOCTYPE html>
         <html>
         <head>
@@ -207,16 +240,3 @@ def handler(request):
         </body>
         </html>
         """
-        return {
-            'statusCode': 200,
-            'headers': {'Content-Type': 'text/html'},
-            'body': html
-        }
-
-    # Resposta padrão para outras rotas
-    else:
-        return {
-            'statusCode': 404,
-            'headers': {'Content-Type': 'text/plain'},
-            'body': 'Página não encontrada'
-        }
