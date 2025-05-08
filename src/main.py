@@ -5,6 +5,10 @@ import json
 import requests # Adicionado para chamadas HTTP
 from openai import OpenAI # Adicionado para usar a API OpenAI
 
+# Carregar variáveis de ambiente do arquivo .env
+from dotenv import load_dotenv
+load_dotenv()  # Carrega as variáveis do arquivo .env
+
 # Adiciona o diretório pai de 'src' ao sys.path para permitir importações relativas corretas
 # Não altere esta configuração de sys.path!
 sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
@@ -17,8 +21,8 @@ from flask import Flask, request, jsonify, render_template
 app = Flask("whatsapp_expert_chat", template_folder=os.path.join(os.path.dirname(__file__), 'templates'), static_folder=os.path.join(os.path.dirname(__file__), 'static'))
 
 # Configuração da chave da API OpenAI (via variável de ambiente)
-OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY", "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")
-OPENAI_MODEL = "gpt-4o-mini" # Modelo a ser utilizado
+OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY", "")
+OPENAI_MODEL = os.environ.get("OPENAI_MODEL", "gpt-4o-mini") # Modelo a ser utilizado
 
 KNOWLEDGE_BASE_FILES = [
     "../knowledge_base/base_conhecimento_whatsapp_api.md",
