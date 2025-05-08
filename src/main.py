@@ -112,6 +112,24 @@ Resposta:
         # A estrutura da resposta pode variar, ajuste conforme necessário
         if gemini_response.get("candidates") and gemini_response["candidates"][0].get("content") and gemini_response["candidates"][0]["content"].get("parts"):
             answer = gemini_response["candidates"][0]["content"]["parts"][0]["text"]
+
+            # Remover links internos da base de conhecimento
+            import re
+            # Padrão para encontrar links markdown para arquivos .md
+            pattern = r'\[([^\]]+)\]\((?:(?!https?://)[^)]+\.md)\)'
+            # Substituir por apenas o texto do link, sem a parte do URL
+            answer = re.sub(pattern, r'\1', answer)
+
+            # Remover referências a documentos específicos da base
+            doc_references = [
+                r'consulte (?:o documento|a seção) ["\']([^"\']+)["\'] na seção de [^\.]+',
+                r'veja (?:o documento|a seção) ["\']([^"\']+)["\'] na seção de [^\.]+',
+                r'consultar (?:o documento|a seção) ["\']([^"\']+)["\'] na seção de [^\.]+',
+                r'consulte a seção de \[([^\]]+)\]'
+            ]
+
+            for pattern in doc_references:
+                answer = re.sub(pattern, r'\1', answer, flags=re.IGNORECASE)
         else:
             # Fallback ou log de erro se a estrutura não for a esperada
             print(f"Estrutura inesperada da resposta do Gemini: {gemini_response}")
