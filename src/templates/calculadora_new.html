@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculadora de Preços da API do WhatsApp</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='calculadora_new.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="calculator-container">
+        <div class="calculator-header">
+            <h1>Calculadora de Preços da API do WhatsApp</h1>
+            <p class="subtitle">Descubra quanto custará usar a API do WhatsApp Business para sua empresa</p>
+            <a href="/" class="back-link"><i class="fas fa-arrow-left"></i> Voltar para o Assistente</a>
+        </div>
+
+        <div class="calculator-description">
+            <p>Tudo o que você precisa é de um modelo de mensagem para iniciar um bate-papo com um cliente.</p>
+            <p>As cobranças vão variar de acordo com a categoria e o país do seu cliente.</p>
+            <p>As cobranças da API do WhatsApp Business são baseadas numa conversa de 24 horas entre a empresa e o cliente, com taxas aplicadas a todas as mensagens trocadas durante esse período.</p>
+            <p>Os preços indicados são fixados pela Meta e estão sujeitos a alterações. Consulte a <a href="https://developers.facebook.com/docs/whatsapp/pricing/" target="_blank">última atualização da Meta</a>.</p>
+        </div>
+
+        <div class="calculator-box">
+            <h2>Calculadora de Preço Brasil</h2>
+            
+            <div class="calculator-item">
+                <div class="item-info">
+                    <h3>
+                        Conversa voltada a marketing
+                        <span class="tooltip-icon" data-tooltip="marketing"><i class="fas fa-info-circle"></i></span>
+                    </h3>
+                    <div class="tooltip" id="tooltip-marketing">
+                        <p>As conversas de marketing estão relacionadas a promoções, atualizações, ofertas ou convites que levam os clientes a responder e se envolver.</p>
+                    </div>
+                    <p class="price">$0.0625 / 24 horas</p>
+                </div>
+                <div class="item-controls">
+                    <button class="control-btn decrease" data-type="marketing">-</button>
+                    <input type="range" min="0" max="10000" value="0" class="slider" id="marketing-slider">
+                    <input type="number" min="0" max="10000" value="0" class="number-input" id="marketing-input">
+                    <button class="control-btn increase" data-type="marketing">+</button>
+                </div>
+                <div class="item-total">
+                    <p>R$ <span id="marketing-total">0,00</span></p>
+                </div>
+            </div>
+            
+            <div class="calculator-item">
+                <div class="item-info">
+                    <h3>
+                        Conversa Utilitária (Utility)
+                        <span class="tooltip-icon" data-tooltip="utility"><i class="fas fa-info-circle"></i></span>
+                    </h3>
+                    <div class="tooltip" id="tooltip-utility">
+                        <p>Essas conversas incluem mensagens que informam ou auxiliam os usuários com informações práticas ou suporte.</p>
+                    </div>
+                    <p class="price">$0.008 / 24 horas</p>
+                </div>
+                <div class="item-controls">
+                    <button class="control-btn decrease" data-type="utility">-</button>
+                    <input type="range" min="0" max="10000" value="0" class="slider" id="utility-slider">
+                    <input type="number" min="0" max="10000" value="0" class="number-input" id="utility-input">
+                    <button class="control-btn increase" data-type="utility">+</button>
+                </div>
+                <div class="item-total">
+                    <p>R$ <span id="utility-total">0,00</span></p>
+                </div>
+            </div>
+            
+            <div class="calculator-item">
+                <div class="item-info">
+                    <h3>
+                        Conversa de Autenticação
+                        <span class="tooltip-icon" data-tooltip="auth"><i class="fas fa-info-circle"></i></span>
+                    </h3>
+                    <div class="tooltip" id="tooltip-auth">
+                        <p>Essas conversas são usadas para validar ou autenticar ações do usuário, como logins ou transações.</p>
+                    </div>
+                    <p class="price">$0.0315 / 24 horas</p>
+                </div>
+                <div class="item-controls">
+                    <button class="control-btn decrease" data-type="auth">-</button>
+                    <input type="range" min="0" max="10000" value="0" class="slider" id="auth-slider">
+                    <input type="number" min="0" max="10000" value="0" class="number-input" id="auth-input">
+                    <button class="control-btn increase" data-type="auth">+</button>
+                </div>
+                <div class="item-total">
+                    <p>R$ <span id="auth-total">0,00</span></p>
+                </div>
+            </div>
+            
+            <div class="calculator-item">
+                <div class="item-info">
+                    <h3>
+                        Conversa sobre serviços
+                        <span class="tooltip-icon" data-tooltip="service"><i class="fas fa-info-circle"></i></span>
+                    </h3>
+                    <div class="tooltip" id="tooltip-service">
+                        <p>Essas conversas são gratuitas para os primeiros 1000 usuários por mês e incluem suporte ou informações sobre serviços.</p>
+                    </div>
+                    <p class="price">$0.03 / 24 horas (1000 grátis/mês)</p>
+                </div>
+                <div class="item-controls">
+                    <button class="control-btn decrease" data-type="service">-</button>
+                    <input type="range" min="0" max="10000" value="1000" class="slider" id="service-slider">
+                    <input type="number" min="0" max="10000" value="1000" class="number-input" id="service-input">
+                    <button class="control-btn increase" data-type="service">+</button>
+                </div>
+                <div class="item-total">
+                    <p>R$ <span id="service-total">0,00</span></p>
+                </div>
+            </div>
+            
+            <div class="calculator-total">
+                <h3>Total: R$ <span id="grand-total">0,00</span></h3>
+            </div>
+            
+            <div class="calculator-actions">
+                <button id="export-btn" class="action-btn">
+                    <i class="fas fa-file-export"></i> Exportar Orçamento
+                </button>
+                <a href="https://wa.me/558197498268?text=Olá%2C%20gostaria%20de%20mais%20informações%20sobre%20a%20API%20do%20WhatsApp%20Business." class="action-btn contact-link" target="_blank">
+                    <i class="fab fa-whatsapp"></i> Falar com o Desenvolvedor
+                </a>
+            </div>
+        </div>
+        
+        <div class="calculator-notes">
+            <p><strong>Nota:</strong> Os preços são baseados na tabela oficial da Meta para o Brasil e podem sofrer alterações. A cotação do dólar utilizada é atualizada diariamente.</p>
+            <p><strong>Importante:</strong> Esta calculadora serve apenas como referência. Para valores exatos, consulte a documentação oficial da Meta ou entre em contato com um representante.</p>
+        </div>
+        
+        <div class="faq-section">
+            <h2>Dúvidas frequentes</h2>
+            
+            <div class="faq-item">
+                <div class="faq-question">Como devo usar a calculadora de preços do WhatsApp?</div>
+                <div class="faq-answer">
+                    <p>Para usar a calculadora de preços do WhatsApp, estime o número de conversas que planeja ter a cada mês em cada categoria, e deixe a calculadora estipular o custo potencial de sua estratégia de mensagens.</p>
+                </div>
+            </div>
+            
+            <div class="faq-item">
+                <div class="faq-question">O que são conversas de marketing?</div>
+                <div class="faq-answer">
+                    <p>As conversas de marketing são iniciadas por sua empresa para promover produtos ou serviços a clientes que concordaram em receber suas mensagens. Esse tipo de mensagem não exige a aprovação do modelo e a aceitação do chat por parte do seu cliente. Esse tipo de conversa pode incluir ofertas, recomendações, atualizações, convites e outras mensagens iniciadas por você que não são relacionadas à autenticação ou a utilitários.</p>
+                </div>
+            </div>
+            
+            <div class="faq-item">
+                <div class="faq-question">O que são conversas utilitárias (utility)?</div>
+                <div class="faq-answer">
+                    <p>As conversas de utilidade oferecem aos seus clientes informações relacionadas à transação, como notificações pós-compra e extratos de cobrança, e podem permitir que elas confirmem, suspendam ou modifiquem suas compras. Como empresa, você deve obter a aprovação do modelo e a aceitação do cliente antes de enviar essas mensagens.</p>
+                </div>
+            </div>
+            
+            <div class="faq-item">
+                <div class="faq-question">O que são conversas de autenticação (Authentication)?</div>
+                <div class="faq-answer">
+                    <p>Conversas de autenticação são conversas iniciadas por sua empresa que usam senhas únicas e seguras para autenticar usuários durante o login, incluindo registro de conta, recuperação e verificações de segurança. Essas conversas exigem um modelo pré-aprovado e a aceitação do cliente.</p>
+                </div>
+            </div>
+            
+            <div class="faq-item">
+                <div class="faq-question">O que são conversas de serviço (Service)?</div>
+                <div class="faq-answer">
+                    <p>As conversas de serviço são iniciadas pelas pessoas que consomem seus produtos, e permite que elas se envolvam com sua empresa quando precisam de assistência. Essas conversas visam resolver dúvidas de clientes, como suporte a produtos ou serviços. Além disso, não exigem um modelo aprovado ou aceitação por parte do cliente.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="{{ url_for('static', filename='calculadora_new.js') }}"></script>
+</body>
+</html>

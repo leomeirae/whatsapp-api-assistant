@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Assistente Especialista API WhatsApp</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style_new.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="app-container">
+        <div class="sidebar">
+            <div class="sidebar-header">
+                <h2>Assistente WhatsApp API</h2>
+            </div>
+            <div class="sidebar-content">
+                <div class="sidebar-intro">
+                    <h3>O que este assistente faz?</h3>
+                    <p>Este assistente especializado foi desenvolvido para ajudar proprietários de pequenas e médias empresas, equipes de marketing e profissionais sem perfil técnico a compreender e utilizar a API Oficial do WhatsApp Business.</p>
+
+                    <h3>Como posso usar este assistente?</h3>
+                    <ul>
+                        <li><strong>Tire dúvidas sobre a API</strong> - desde conceitos básicos até configurações avançadas</li>
+                        <li><strong>Obtenha orientações passo a passo</strong> para implementação e uso</li>
+                        <li><strong>Descubra estratégias de otimização de custos</strong> para maximizar seu investimento</li>
+                        <li><strong>Aprenda sobre verificação de empresas</strong> e como obter recursos avançados</li>
+                        <li><strong>Entenda as melhores práticas</strong> para mensagens e templates</li>
+                    </ul>
+                </div>
+                <div class="sidebar-tools">
+                    <h3>Ferramentas</h3>
+                    <a href="/calculadora" class="tool-link">
+                        <i class="fas fa-calculator"></i> Calculadora de Preços
+                    </a>
+                    <a href="https://wa.me/558197498268?text=Olá%2C%20gostaria%20de%20mais%20informações%20sobre%20a%20API%20do%20WhatsApp%20Business." class="tool-link contact-link" target="_blank">
+                        <i class="fab fa-whatsapp"></i> Falar com o Desenvolvedor
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="chat-container">
+            <header>
+                <h1>Assistente Especialista API WhatsApp Business</h1>
+                <p>Pergunte sobre a API, estratégias, custos e mais!</p>
+            </header>
+            <div class="chat-box" id="chatBox">
+                <!-- Mensagens do chat aparecerão aqui -->
+                <div class="message assistant-message">
+                    <p>Olá! Sou o assistente especializado em API do WhatsApp Business. Como posso te ajudar hoje?</p>
+                </div>
+            </div>
+            <div class="chat-input">
+                <input type="text" id="userInput" placeholder="Digite sua pergunta aqui...">
+                <button id="sendButton">Enviar <i class="fas fa-paper-plane"></i></button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Biblioteca para processar Markdown -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>

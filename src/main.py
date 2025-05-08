@@ -3,6 +3,7 @@ import sys
 import os
 import json
 import requests # Adicionado para chamadas HTTP
+from openai import OpenAI # Adicionado para usar a API OpenAI
 
 # Adiciona o diretório pai de 'src' ao sys.path para permitir importações relativas corretas
 # Não altere esta configuração de sys.path!
@@ -15,13 +16,16 @@ from flask import Flask, request, jsonify, render_template
 # Não altere o nome do aplicativo Flask!
 app = Flask("whatsapp_expert_chat", template_folder=os.path.join(os.path.dirname(__file__), 'templates'), static_folder=os.path.join(os.path.dirname(__file__), 'static'))
 
-# Configuração da chave da API Gemini (idealmente via variável de ambiente)
-GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY", "AIzaSyC--ZpEAGpmeC55Bi1lWHzdTfn56KRW7OA") # Use a chave fornecida como fallback
-GEMINI_API_URL = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key={GEMINI_API_KEY}"
+# Configuração da chave da API OpenAI (idealmente via variável de ambiente)
+OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY", "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")
+OPENAI_MODEL = "gpt-4o-mini" # Modelo a ser utilizado
 
 KNOWLEDGE_BASE_FILES = [
-    "knowledge_base/base_conhecimento_whatsapp_api.md",
-    "knowledge_base/estrategias_whatsapp_api.md"
+    "../knowledge_base/base_conhecimento_whatsapp_api.md",
+    "../knowledge_base/estrategias_whatsapp_api.md",
+    "../knowledge_base/05_verificacao_empresas/verificacao_empresas_meta.md",
+    "../knowledge_base/05_verificacao_empresas/verificacao_whatsapp_business.md",
+    "../knowledge_base/05_verificacao_empresas/guia_passo_a_passo_verificacao.md"
 ]
 
 def load_knowledge_base():
@@ -53,7 +57,12 @@ def get_relevant_context(user_question, knowledge_text, max_chars=8000):
 @app.route("/")
 def index():
     """Renderiza a página principal do chat."""
-    return render_template("index.html")
+    return render_template("index_new.html")
+
+@app.route("/calculadora")
+def calculadora():
+    """Renderiza a página da calculadora de preços da API do WhatsApp."""
+    return render_template("calculadora_new.html")
 
 @app.route("/ask", methods=["POST"])
 def ask_assistant():
@@ -69,15 +78,22 @@ def ask_assistant():
 
     relevant_context = get_relevant_context(user_question, KNOWLEDGE_BASE_TEXT)
 
-    prompt = f"""Você é um assistente IA especialista na API Oficial do WhatsApp Business, criado para ajudar proprietários de pequenas e médias empresas e equipes de marketing, geralmente pessoas sem muito perfil técnico. Suas respostas devem ser claras, objetivas, oferecer passo a passo prático quando aplicável, e focar em estratégias de economia e melhor custo-benefício.
+    # Inicializar o cliente OpenAI
+    client = OpenAI(api_key=OPENAI_API_KEY)
+
+    # Criar o sistema de prompt e o prompt do usuário
+    system_prompt = """Você é um assistente IA especialista na API Oficial do WhatsApp Business, criado para ajudar proprietários de pequenas e médias empresas e equipes de marketing, geralmente pessoas sem muito perfil técnico. Suas respostas devem ser claras, objetivas, oferecer passo a passo prático quando aplicável, e focar em estratégias de economia e melhor custo-benefício.
 
 IMPORTANTE:
 1. NÃO inclua links para documentos internos da base de conhecimento como "Requisitos" ou "Configuração Inicial".
 2. Apenas inclua links para sites externos oficiais como "developers.facebook.com" ou "business.whatsapp.com".
 3. Não mencione que está usando uma base de conhecimento interna.
 4. Apresente a informação diretamente sem referir-se a documentos específicos da base.
+5. NUNCA use formatação como [texto](caminho/arquivo.md) ou [texto](01_introducao/tipos_de_api.md).
+6. Se precisar mencionar um documento, apenas mencione o nome sem criar um link.
+"""
 
-Utilize o seguinte CONTEXTO da nossa base de conhecimento para responder à PERGUNTA do usuário:
+    user_prompt = f"""Utilize o seguinte CONTEXTO para responder à PERGUNTA do usuário:
 
 CONTEXTO:
 ---
@@ -88,59 +104,44 @@ PERGUNTA:
 ---
 {user_question}
 ---
-
-Resposta:
 """
 
-    payload = {
-        "contents": [{
-            "parts": [{"text": prompt}]
-        }]
-    }
-
-    headers = {
-        "Content-Type": "application/json"
-    }
-
     try:
-        response = requests.post(GEMINI_API_URL, headers=headers, json=payload, timeout=60)
-        response.raise_for_status() # Lança exceção para respostas de erro HTTP (4xx ou 5xx)
+        # Fazer a chamada para a API OpenAI
+        response = client.chat.completions.create(
+            model=OPENAI_MODEL,
+            messages=[
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": user_prompt}
+            ],
+            temperature=0.7,
+            max_tokens=1000
+        )
 
-        gemini_response = response.json()
+        # Extrair a resposta
+        answer = response.choices[0].message.content
 
-        # Extraindo o texto da resposta do Gemini
-        # A estrutura da resposta pode variar, ajuste conforme necessário
-        if gemini_response.get("candidates") and gemini_response["candidates"][0].get("content") and gemini_response["candidates"][0]["content"].get("parts"):
-            answer = gemini_response["candidates"][0]["content"]["parts"][0]["text"]
+        # Pós-processamento para remover qualquer link interno que possa ter passado
+        import re
 
-            # Remover links internos da base de conhecimento
-            import re
-            # Padrão para encontrar links markdown para arquivos .md
-            pattern = r'\[([^\]]+)\]\((?:(?!https?://)[^)]+\.md)\)'
-            # Substituir por apenas o texto do link, sem a parte do URL
-            answer = re.sub(pattern, r'\1', answer)
+        # Padrões para encontrar e remover links internos
+        patterns = [
+            r'\[([^\]]+)\]\((?:(?!https?://)[^)]+\.md)\)',  # Links markdown para arquivos .md
+            r'\[([^\]]+)\]\((?:\d+_[^)]+/[^)]+\.md)\)',     # Links com padrão específico da base
+            r'consulte (?:o documento|a seção) ["\']([^"\']+)["\'] na seção de [^\.]+',
+            r'veja (?:o documento|a seção) ["\']([^"\']+)["\'] na seção de [^\.]+',
+            r'consultar (?:o documento|a seção) ["\']([^"\']+)["\'] na seção de [^\.]+',
+            r'consulte a seção de \[([^\]]+)\]',
+            r'Para mais detalhes sobre .+, consulte o documento \[([^\]]+)\]',
+            r'Veja mais em \[([^\]]+)\]'
+        ]
 
-            # Remover referências a documentos específicos da base
-            doc_references = [
-                r'consulte (?:o documento|a seção) ["\']([^"\']+)["\'] na seção de [^\.]+',
-                r'veja (?:o documento|a seção) ["\']([^"\']+)["\'] na seção de [^\.]+',
-                r'consultar (?:o documento|a seção) ["\']([^"\']+)["\'] na seção de [^\.]+',
-                r'consulte a seção de \[([^\]]+)\]'
-            ]
+        for pattern in patterns:
+            answer = re.sub(pattern, r'\1', answer, flags=re.IGNORECASE)
 
-            for pattern in doc_references:
-                answer = re.sub(pattern, r'\1', answer, flags=re.IGNORECASE)
-        else:
-            # Fallback ou log de erro se a estrutura não for a esperada
-            print(f"Estrutura inesperada da resposta do Gemini: {gemini_response}")
-            answer = "Desculpe, não consegui processar a resposta do assistente no momento."
-
-    except requests.exceptions.RequestException as e:
-        print(f"Erro na chamada da API Gemini: {e}")
-        answer = f"Desculpe, ocorreu um erro ao contatar o assistente: {e}"
     except Exception as e:
-        print(f"Erro inesperado: {e}")
-        answer = "Desculpe, ocorreu um erro inesperado."
+        print(f"Erro ao chamar a API OpenAI: {e}")
+        answer = f"Desculpe, ocorreu um erro ao processar sua pergunta: {e}"
 
     return jsonify({"answer": answer})
 
