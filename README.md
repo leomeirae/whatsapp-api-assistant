@@ -30,19 +30,19 @@ Este projeto implementa um Chat Especialista sobre a API Oficial do WhatsApp Bus
         pip install -r requirements.txt
         ```
 
-4.  **Configure a Chave da API Gemini:**
-    *   Você precisará de uma chave da API Gemini. A chave fornecida durante o desenvolvimento foi `AIzaSyC--ZpEAGpmeC55Bi1lWHzdTfn56KRW7OA`.
-    *   A aplicação tentará ler a chave da variável de ambiente `GEMINI_API_KEY`. Configure esta variável de ambiente no seu sistema:
-        *   **No macOS/Linux (temporário para a sessão do terminal):**
-            ```bash
-            export GEMINI_API_KEY="SUA_CHAVE_API_AQUI"
-            ```
-        *   **No Windows (temporário para a sessão do prompt de comando):**
-            ```bash
-            set GEMINI_API_KEY=SUA_CHAVE_API_AQUI
-            ```
-        *   Para configuração permanente, consulte a documentação do seu sistema operacional sobre como definir variáveis de ambiente.
-    *   Alternativamente, se você não configurar a variável de ambiente, a aplicação usará a chave `AIzaSyC--ZpEAGpmeC55Bi1lWHzdTfn56KRW7OA` que está como fallback no código (`src/main.py`). **Para uso em produção ou se a chave fornecida for sensível, é altamente recomendável usar variáveis de ambiente.**
+4.  **Configure as Variáveis de Ambiente:**
+    *   Crie um arquivo `.env` na raiz do projeto com as seguintes variáveis:
+        ```
+        # Configurações da API OpenAI
+        OPENAI_API_KEY=sua_chave_api_aqui
+        OPENAI_MODEL=gpt-4o-mini
+
+        # Configurações do servidor Flask
+        FLASK_ENV=development
+        PORT=5000
+        ```
+    *   Substitua `sua_chave_api_aqui` pela sua chave da API OpenAI.
+    *   **IMPORTANTE:** Nunca compartilhe ou cometa sua chave da API no controle de versão. O arquivo `.env` já está incluído no `.gitignore`.
 
 ## Executando a Aplicação
 
@@ -92,3 +92,39 @@ whatsapp_expert_chat/
 
 Se encontrar outros problemas, verifique as mensagens de erro no terminal onde o servidor Flask está rodando para obter mais detalhes.
 
+## Implantação em Produção
+
+Para implantar a aplicação em um ambiente de produção, siga estas etapas:
+
+1. **Configuração do Servidor WSGI (Gunicorn)**:
+   * O projeto já inclui o Gunicorn como servidor WSGI para produção.
+   * Use o arquivo `gunicorn_config.py` para configurar o Gunicorn:
+     ```bash
+     gunicorn -c gunicorn_config.py src.main:app
+     ```
+
+2. **Usando Docker**:
+   * O projeto inclui um Dockerfile para facilitar a implantação.
+   * Para construir a imagem Docker:
+     ```bash
+     docker build -t whatsapp-api-assistant .
+     ```
+   * Para executar o contêiner:
+     ```bash
+     docker run -p 8080:8080 --env-file .env whatsapp-api-assistant
+     ```
+
+3. **Implantação no Render**:
+   * Conecte seu repositório GitHub ao Render.
+   * Selecione "Web Service" e configure:
+     - Build Command: `pip install -r requirements.txt`
+     - Start Command: `gunicorn src.main:app`
+   * Configure as variáveis de ambiente necessárias (OPENAI_API_KEY, OPENAI_MODEL).
+
+4. **Considerações de Segurança**:
+   * Nunca armazene chaves de API diretamente no código.
+   * Use variáveis de ambiente para todas as credenciais.
+   * Configure HTTPS para proteger a comunicação.
+   * Considere adicionar autenticação para proteger o acesso à API.
+
+Para mais informações sobre implantação, consulte a documentação do Flask e do Gunicorn.

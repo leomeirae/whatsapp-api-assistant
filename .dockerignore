@@ -1,0 +1,53 @@
+# Ambiente virtual
+venv/
+env/
+ENV/
+
+# Arquivos de cache Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Logs
+*.log
+logs/
+
+# Arquivos locais e sensíveis
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Arquivos do sistema
+.DS_Store
+Thumbs.db
+
+# IDEs e editores
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Arquivos Git
+.git
+.gitignore
+
+# Arquivos Docker
+.dockerignore
