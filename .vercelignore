@@ -1,4 +1,43 @@
-# Ignorar tudo exceto o necessário
-*
-!api/index.py
-!vercel.json
+# Ignorar arquivos e diretórios desnecessários
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Ignorar arquivos de dados
+src/data/
+
+# Ignorar arquivos de configuração local
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Ignorar arquivos do sistema
+.DS_Store
+Thumbs.db
+
+# Ignorar arquivos de IDE
+.idea/
+.vscode/
+*.swp
+*.swo
