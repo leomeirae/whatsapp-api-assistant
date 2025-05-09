@@ -10,10 +10,3 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 # Importar a aplicação Flask
 from src.main import app
-
-
-def handler(request, context):
-    """
-    Função handler para Vercel serverless
-    """
-    return app(request, context)
