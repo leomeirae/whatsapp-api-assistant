@@ -16,14 +16,6 @@
       "dest": "/src/static/$1"
     },
     {
-      "src": "/ask",
-      "dest": "/api/index.py"
-    },
-    {
-      "src": "/calculadora",
-      "dest": "/api/index.py"
-    },
-    {
       "src": "/(.*)",
       "dest": "/api/index.py"
     }

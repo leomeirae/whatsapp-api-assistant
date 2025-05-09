@@ -23,7 +23,7 @@ wheels/
 *.egg
 
 # Ignorar arquivos de dados
-src/data/*.json
+src/data/
 
 # Ignorar arquivos de configuração local
 .env
@@ -41,3 +41,11 @@ Thumbs.db
 .vscode/
 *.swp
 *.swo
+
+# Ignorar arquivos específicos para reduzir o tamanho
+requirements.txt
+supabase_rpc.sql
+supabase_tables_simple.sql
+src/main.py
+src/database.py
+src/local_storage.py
