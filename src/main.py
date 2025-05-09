@@ -13,12 +13,29 @@ load_dotenv()  # Carrega as variáveis do arquivo .env
 # Não altere esta configuração de sys.path!
 sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
 
-from flask import Flask, request, jsonify, render_template
+from flask import Flask, request, jsonify, render_template, redirect, url_for, flash, session, get_flashed_messages
+from flask_login import LoginManager, login_user, logout_user, login_required, current_user
+from werkzeug.security import generate_password_hash, check_password_hash
+
+# Importar configurações e classes para autenticação e histórico
+from src.config import SECRET_KEY
+from src.database import User, ChatHistory, supabase
+from src.forms import LoginForm, RegisterForm
 
 # Cria uma instância do aplicativo Flask
 # O nome do aplicativo é definido como "whatsapp_expert_chat" ou o nome do diretório do projeto
 # Não altere o nome do aplicativo Flask!
 app = Flask("whatsapp_expert_chat", template_folder=os.path.join(os.path.dirname(__file__), 'templates'), static_folder=os.path.join(os.path.dirname(__file__), 'static'))
+app.config['SECRET_KEY'] = SECRET_KEY
+
+# Configurar o gerenciador de login
+login_manager = LoginManager()
+login_manager.init_app(app)
+login_manager.login_view = 'login'
+
+@login_manager.user_loader
+def load_user(user_id):
+    return User.get_by_id(user_id)
 
 # Configuração da chave da API OpenAI (via variável de ambiente)
 OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY", "")
@@ -27,68 +44,242 @@ OPENAI_MODEL = os.environ.get("OPENAI_MODEL", "gpt-4o-mini") # Modelo a ser util
 # Diretório raiz do projeto
 ROOT_DIR = os.path.dirname(os.path.dirname(__file__))
 
-KNOWLEDGE_BASE_FILES = [
-    os.path.join(ROOT_DIR, "knowledge_base/base_conhecimento_whatsapp_api.md"),
-    os.path.join(ROOT_DIR, "knowledge_base/estrategias_whatsapp_api.md"),
-    os.path.join(ROOT_DIR, "knowledge_base/05_verificacao_empresas/verificacao_empresas_meta.md"),
-    os.path.join(ROOT_DIR, "knowledge_base/05_verificacao_empresas/verificacao_whatsapp_business.md"),
-    os.path.join(ROOT_DIR, "knowledge_base/05_verificacao_empresas/guia_passo_a_passo_verificacao.md")
-]
+# Importar bibliotecas necessárias para RAG
+import numpy as np
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.metrics.pairwise import cosine_similarity
+import re
+
+# Definir o caminho da base de conhecimento
+KNOWLEDGE_BASE_DIR = os.path.join(os.path.dirname(__file__), 'knowledge_base')
+
+# Função para encontrar todos os arquivos markdown na base de conhecimento
+def find_markdown_files(directory):
+    """Encontra todos os arquivos markdown em um diretório e seus subdiretórios."""
+    markdown_files = []
+    for root, _, files in os.walk(directory):
+        for file in files:
+            if file.endswith('.md'):
+                markdown_files.append(os.path.join(root, file))
+    return markdown_files
+
+# Obter lista de todos os arquivos markdown
+KNOWLEDGE_BASE_FILES = find_markdown_files(KNOWLEDGE_BASE_DIR)
+
+# Estrutura para armazenar chunks de documentos
+class DocumentChunk:
+    def __init__(self, content, source, title=None):
+        self.content = content
+        self.source = source
+        self.title = title or os.path.basename(source)
+
+    def __str__(self):
+        return f"{self.title} - {self.content[:50]}..."
+
+# Função para dividir documentos em chunks
+def split_document(content, source, chunk_size=1000, overlap=200):
+    """Divide um documento em chunks menores com sobreposição."""
+    chunks = []
+
+    # Extrair título do documento (primeira linha com #)
+    title_match = re.search(r'^#\s+(.+)$', content, re.MULTILINE)
+    title = title_match.group(1) if title_match else os.path.basename(source)
+
+    # Dividir por parágrafos ou seções
+    paragraphs = re.split(r'\n\s*\n', content)
+
+    current_chunk = ""
+    for paragraph in paragraphs:
+        # Se adicionar este parágrafo exceder o tamanho do chunk, salve o chunk atual e comece um novo
+        if len(current_chunk) + len(paragraph) > chunk_size and current_chunk:
+            chunks.append(DocumentChunk(current_chunk, source, title))
+            # Manter alguma sobreposição para contexto
+            current_chunk = current_chunk[-overlap:] if overlap > 0 else ""
+
+        current_chunk += paragraph + "\n\n"
+
+    # Adicionar o último chunk se não estiver vazio
+    if current_chunk.strip():
+        chunks.append(DocumentChunk(current_chunk, source, title))
+
+    return chunks
 
 def load_knowledge_base():
-    """Carrega o conteúdo dos arquivos da base de conhecimento."""
-    knowledge_content = ""
+    """Carrega e processa a base de conhecimento em chunks."""
+    all_chunks = []
+
     for file_path in KNOWLEDGE_BASE_FILES:
         try:
             with open(file_path, "r", encoding="utf-8") as f:
-                knowledge_content += f.read() + "\n\n"
-        except FileNotFoundError:
-            print(f"Aviso: Arquivo da base de conhecimento não encontrado: {file_path}")
+                content = f.read()
+                # Dividir o documento em chunks
+                document_chunks = split_document(content, file_path)
+                all_chunks.extend(document_chunks)
+                print(f"Carregado: {file_path} - {len(document_chunks)} chunks")
         except Exception as e:
             print(f"Erro ao carregar {file_path}: {e}")
-    return knowledge_content
 
-# Carrega a base de conhecimento uma vez ao iniciar o app
-KNOWLEDGE_BASE_TEXT = load_knowledge_base()
+    return all_chunks
 
-def get_relevant_context(user_question, knowledge_text, max_chars=8000):
-    """Extrai contexto relevante da base de conhecimento (método simples)."""
-    # Poderia ser mais sofisticado, mas para começar, podemos usar a base inteira
-    # ou uma busca simples por palavras-chave se necessário no futuro.
-    # Por enquanto, vamos apenas truncar para evitar exceder limites de prompt.
-    return knowledge_text[:max_chars]
+# Carregar e processar a base de conhecimento
+KNOWLEDGE_BASE_CHUNKS = load_knowledge_base()
+
+# Criar vetorizador TF-IDF para busca semântica
+vectorizer = TfidfVectorizer(lowercase=True, stop_words='english')
+chunk_contents = [chunk.content for chunk in KNOWLEDGE_BASE_CHUNKS]
+tfidf_matrix = vectorizer.fit_transform(chunk_contents)
+
+def get_relevant_context(user_question, knowledge_chunks=KNOWLEDGE_BASE_CHUNKS, top_k=5, max_chars=8000):
+    """Extrai contexto relevante da base de conhecimento usando similaridade TF-IDF."""
+    if not knowledge_chunks:
+        return "Base de conhecimento não disponível."
+
+    # Vetorizar a pergunta do usuário
+    question_vector = vectorizer.transform([user_question])
+
+    # Calcular similaridade com todos os chunks
+    similarities = cosine_similarity(question_vector, tfidf_matrix).flatten()
+
+    # Obter os índices dos top_k chunks mais relevantes
+    top_indices = similarities.argsort()[-top_k:][::-1]
+
+    # Construir o contexto com os chunks mais relevantes
+    relevant_context = ""
+    sources_used = set()
+
+    for idx in top_indices:
+        chunk = KNOWLEDGE_BASE_CHUNKS[idx]
+        similarity_score = similarities[idx]
+
+        # Apenas incluir chunks com alguma relevância
+        if similarity_score > 0.1:  # Limiar de similaridade
+            relevant_context += f"\n\n--- Trecho de {chunk.title} ---\n"
+            relevant_context += chunk.content
+            sources_used.add(chunk.source)
+
+    # Se não encontrou nada relevante, use os primeiros chunks
+    if not relevant_context:
+        print("Nenhum conteúdo relevante encontrado, usando chunks padrão.")
+        for i in range(min(3, len(KNOWLEDGE_BASE_CHUNKS))):
+            chunk = KNOWLEDGE_BASE_CHUNKS[i]
+            relevant_context += f"\n\n--- Trecho de {chunk.title} ---\n"
+            relevant_context += chunk.content
+
+    # Limitar o tamanho do contexto para não exceder limites de tokens
+    if len(relevant_context) > max_chars:
+        relevant_context = relevant_context[:max_chars]
+
+    print(f"Fontes utilizadas: {', '.join([os.path.basename(src) for src in sources_used])}")
+    return relevant_context
+
+@app.route("/login", methods=["GET", "POST"])
+def login():
+    """Página de login."""
+    form = LoginForm()
+    if form.validate_on_submit():
+        try:
+            # Verificar credenciais com Supabase
+            response = supabase.table('users').select('*').eq('email', form.email.data).execute()
+
+            if response.data and len(response.data) > 0:
+                user_data = response.data[0]
+                # Verificar senha
+                if check_password_hash(user_data['password_hash'], form.password.data):
+                    user = User(
+                        id=user_data['id'],
+                        email=user_data['email'],
+                        is_authenticated=True
+                    )
+                    login_user(user)
+                    flash('Login realizado com sucesso!', 'success')
+                    return redirect(url_for('index'))
+                else:
+                    flash('Senha incorreta.', 'error')
+            else:
+                flash('Email não encontrado.', 'error')
+        except Exception as e:
+            flash(f'Erro ao fazer login: {e}', 'error')
+
+    return render_template("login.html", form=form, messages=get_flashed_messages(with_categories=True))
+
+@app.route("/register", methods=["GET", "POST"])
+def register():
+    """Página de registro."""
+    form = RegisterForm()
+    if form.validate_on_submit():
+        try:
+            # Verificar se o email já existe
+            response = supabase.table('users').select('*').eq('email', form.email.data).execute()
+
+            if response.data and len(response.data) > 0:
+                flash('Este email já está em uso.', 'error')
+            else:
+                # Criar hash da senha
+                password_hash = generate_password_hash(form.password.data)
+
+                # Inserir novo usuário
+                user_data = {
+                    'email': form.email.data,
+                    'password_hash': password_hash,
+                    'created_at': 'now()'
+                }
+
+                response = supabase.table('users').insert(user_data).execute()
+
+                if response.data:
+                    flash('Registro realizado com sucesso! Faça login para continuar.', 'success')
+                    return redirect(url_for('login'))
+                else:
+                    flash('Erro ao registrar usuário.', 'error')
+        except Exception as e:
+            flash(f'Erro ao registrar: {e}', 'error')
+
+    return render_template("register.html", form=form, messages=get_flashed_messages(with_categories=True))
+
+@app.route("/logout")
+@login_required
+def logout():
+    """Rota para logout."""
+    logout_user()
+    flash('Logout realizado com sucesso!', 'success')
+    return redirect(url_for('login'))
 
 @app.route("/")
+@login_required
 def index():
     """Renderiza a página principal do chat."""
     return render_template("index_new.html")
 
 @app.route("/calculadora")
+@login_required
 def calculadora():
     """Renderiza a página da calculadora de preços da API do WhatsApp."""
     return render_template("calculadora_new.html")
 
 def process_question(user_question):
     """Processa a pergunta do usuário e retorna a resposta do assistente."""
-    if not KNOWLEDGE_BASE_TEXT:
+    if not KNOWLEDGE_BASE_CHUNKS:
         print("Aviso: Base de conhecimento está vazia. Respostas podem ser limitadas.")
 
-    relevant_context = get_relevant_context(user_question, KNOWLEDGE_BASE_TEXT)
+    relevant_context = get_relevant_context(user_question)
 
     # Inicializar o cliente OpenAI
     # Removendo qualquer configuração de proxy que possa estar causando problemas
     client = OpenAI(api_key=OPENAI_API_KEY)
 
     # Criar o sistema de prompt e o prompt do usuário
-    system_prompt = """Você é um assistente IA especialista na API Oficial do WhatsApp Business, criado para ajudar proprietários de pequenas e médias empresas e equipes de marketing, geralmente pessoas sem muito perfil técnico. Suas respostas devem ser claras, objetivas, oferecer passo a passo prático quando aplicável, e focar em estratégias de economia e melhor custo-benefício.
+    system_prompt = """Você é um assistente IA especialista técnico na API Oficial do WhatsApp Business, criado para fornecer informações precisas e detalhadas sobre a implementação e uso da API do WhatsApp. Você deve priorizar respostas técnicas e específicas, com exemplos de código quando relevante.
 
 IMPORTANTE:
-1. NÃO inclua links para documentos internos da base de conhecimento como "Requisitos" ou "Configuração Inicial".
-2. Apenas inclua links para sites externos oficiais como "developers.facebook.com" ou "business.whatsapp.com".
-3. Não mencione que está usando uma base de conhecimento interna.
-4. Apresente a informação diretamente sem referir-se a documentos específicos da base.
-5. NUNCA use formatação como [texto](caminho/arquivo.md) ou [texto](01_introducao/tipos_de_api.md).
-6. Se precisar mencionar um documento, apenas mencione o nome sem criar um link.
+1. Você é um ESPECIALISTA TÉCNICO na API do WhatsApp Business. Suas respostas devem ser detalhadas, precisas e focadas em aspectos técnicos da API.
+2. Quando o usuário fizer perguntas sobre a API, forneça detalhes técnicos específicos, incluindo endpoints, parâmetros, formatos de resposta e exemplos de código.
+3. Diferencie claramente entre o aplicativo WhatsApp Business (para pequenas empresas) e a API do WhatsApp Business (para integração programática).
+4. Quando o usuário perguntar sobre implementação, forneça exemplos de código em Python ou JavaScript.
+5. Apenas inclua links para sites externos oficiais como "developers.facebook.com" ou "business.whatsapp.com".
+6. Não mencione que está usando uma base de conhecimento interna.
+7. Apresente a informação diretamente sem referir-se a documentos específicos da base.
+8. NUNCA use formatação como [texto](caminho/arquivo.md) ou [texto](01_introducao/tipos_de_api.md).
+9. Quando o usuário perguntar sobre como usar o WhatsApp Business (não a API), esclareça a diferença e explique que você é especialista na API, mas pode fornecer informações básicas sobre o aplicativo.
 """
 
     user_prompt = f"""Utilize o seguinte CONTEXTO para responder à PERGUNTA do usuário:
@@ -145,6 +336,7 @@ PERGUNTA:
 
 
 @app.route("/ask", methods=["POST"])
+@login_required
 def ask_assistant():
     """Recebe a pergunta do usuário e retorna a resposta do assistente."""
     data = request.get_json()
@@ -153,8 +345,68 @@ def ask_assistant():
     if not user_question:
         return jsonify({"error": "Nenhuma pergunta fornecida."}), 400
 
+    # Processar a pergunta
     result = process_question(user_question)
+
+    # Salvar a pergunta e a resposta no histórico se o usuário estiver autenticado
+    if current_user.is_authenticated:
+        try:
+            # Salvar a pergunta do usuário usando Supabase
+            ChatHistory.save_message(
+                user_id=current_user.id,
+                role="user",
+                content=user_question
+            )
+
+            # Salvar a resposta do assistente
+            if "answer" in result:
+                ChatHistory.save_message(
+                    user_id=current_user.id,
+                    role="assistant",
+                    content=result["answer"]
+                )
+        except Exception as e:
+            print(f"Erro ao salvar histórico: {e}")
+            import traceback
+            traceback.print_exc()
+
     return jsonify(result)
+
+@app.route("/history")
+@login_required
+def view_history():
+    """Exibe o histórico de conversas do usuário."""
+    try:
+        # Obter histórico do usuário usando Supabase
+        history = ChatHistory.get_user_history(current_user.id)
+
+        # Formatar o histórico para exibição
+        formatted_history = []
+
+        if history:
+            for msg in history:
+                # Verificar se as chaves existem no dicionário
+                role = msg.get("role", "unknown")
+                content = msg.get("content", "")
+                timestamp = msg.get("created_at", "")
+
+                formatted_history.append({
+                    "role": role,
+                    "content": content,
+                    "timestamp": timestamp
+                })
+
+        print(f"Histórico formatado: {formatted_history}")
+
+        return render_template(
+            "history.html",
+            history=formatted_history
+        )
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        flash(f"Erro ao carregar histórico: {e}", "error")
+        return redirect(url_for("index"))
 
 # Ponto de entrada principal para executar o aplicativo Flask
 # O aplicativo será executado em http://0.0.0.0:5000 por padrão

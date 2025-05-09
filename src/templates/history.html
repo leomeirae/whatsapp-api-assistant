@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Histórico de Conversas - Assistente WhatsApp API</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style_new.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <style>
+        .history-container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .history-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+
+        .history-header h1 {
+            color: var(--primary-color);
+            margin: 0;
+        }
+
+        .back-button {
+            display: inline-flex;
+            align-items: center;
+            padding: 10px 15px;
+            background-color: var(--secondary-color);
+            color: white;
+            border-radius: 5px;
+            text-decoration: none;
+            transition: var(--transition);
+        }
+
+        .back-button:hover {
+            background-color: var(--dark-color);
+            transform: translateY(-2px);
+        }
+
+        .back-button i {
+            margin-right: 8px;
+        }
+
+        .conversation-list {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .conversation-item {
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .conversation-header {
+            background-color: #f5f5f5;
+            padding: 15px;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .conversation-timestamp {
+            font-size: 0.9em;
+            color: #666;
+        }
+
+        .message-container {
+            padding: 15px;
+        }
+
+        .message {
+            margin-bottom: 15px;
+            padding: 12px 15px;
+            border-radius: 10px;
+            max-width: 80%;
+        }
+
+        .message:last-child {
+            margin-bottom: 0;
+        }
+
+        .user-message {
+            background-color: var(--primary-light-color);
+            color: var(--dark-color);
+            align-self: flex-end;
+            margin-left: auto;
+        }
+
+        .assistant-message {
+            background-color: var(--light-color);
+            color: var(--dark-color);
+            align-self: flex-start;
+        }
+
+        .message-role {
+            font-weight: bold;
+            margin-bottom: 5px;
+            font-size: 0.9em;
+            color: #555;
+        }
+
+        .message-content {
+            white-space: pre-wrap;
+        }
+
+        .no-history {
+            text-align: center;
+            padding: 50px 0;
+            color: #666;
+        }
+
+        .no-history i {
+            font-size: 3em;
+            margin-bottom: 20px;
+            color: #ddd;
+        }
+    </style>
+</head>
+<body>
+    <div class="history-container">
+        <div class="history-header">
+            <h1>Histórico de Conversas</h1>
+            <a href="{{ url_for('index') }}" class="back-button">
+                <i class="fas fa-arrow-left"></i> Voltar ao Chat
+            </a>
+        </div>
+
+        {% if history and history|length > 0 %}
+        <div class="conversation-list">
+            {% for message in history %}
+                {% if loop.index0 == 0 or message.role == 'user' and history[loop.index0-1].role == 'assistant' %}
+                    {% if loop.index0 > 0 %}
+                        </div>
+                    </div>
+                    {% endif %}
+                    <div class="conversation-item">
+                        <div class="conversation-header">
+                            <div class="conversation-timestamp">
+                                {{ message.timestamp }}
+                            </div>
+                        </div>
+                        <div class="message-container">
+                {% endif %}
+
+                <div class="message {% if message.role == 'user' %}user-message{% else %}assistant-message{% endif %}">
+                    <div class="message-role">
+                        {% if message.role == 'user' %}Você{% else %}Assistente{% endif %}
+                    </div>
+                    <div class="message-content">
+                        {{ message.content }}
+                    </div>
+                </div>
+
+                {% if loop.last %}
+                    </div>
+                </div>
+                {% endif %}
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="no-history">
+            <i class="far fa-comment-dots"></i>
+            <p>Você ainda não tem conversas registradas.</p>
+            <p>Faça perguntas ao assistente para começar a registrar seu histórico.</p>
+            <a href="{{ url_for('index') }}" class="back-button">
+                <i class="fas fa-arrow-left"></i> Iniciar uma Conversa
+            </a>
+        </div>
+        {% endif %}
+    </div>
+</body>
+</html>

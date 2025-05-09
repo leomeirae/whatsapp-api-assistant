@@ -43,3 +43,6 @@ Thumbs.db
 .vscode/
 *.swp
 *.swo
+
+# Arquivos de histórico de conversas
+src/data/*.json

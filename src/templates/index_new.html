@@ -10,40 +10,28 @@
 </head>
 <body>
     <div class="app-container">
-        <div class="sidebar">
-            <div class="sidebar-header">
-                <h2>Assistente WhatsApp API</h2>
-            </div>
-            <div class="sidebar-content">
-                <div class="sidebar-intro">
-                    <h3>Sobre este assistente</h3>
-                    <p>Ajuda para empresas e profissionais utilizarem a API do WhatsApp Business de forma eficiente.</p>
-
-                    <h3>Recursos</h3>
-                    <ul class="compact-list">
-                        <li>Dúvidas sobre API e configurações</li>
-                        <li>Orientações de implementação</li>
-                        <li>Estratégias de otimização de custos</li>
-                        <li>Verificação de empresas</li>
-                        <li>Melhores práticas para mensagens</li>
-                    </ul>
-                </div>
-                <div class="sidebar-tools">
-                    <h3>Ferramentas</h3>
-                    <a href="/calculadora" class="tool-link">
-                        <i class="fas fa-calculator"></i> Calculadora de Preços
-                    </a>
-                    <a href="https://wa.me/558197498268?text=Olá%2C%20gostaria%20de%20mais%20informações%20sobre%20a%20API%20do%20WhatsApp%20Business." class="tool-link contact-link" target="_blank">
-                        <i class="fab fa-whatsapp"></i> Falar com o Desenvolvedor
-                    </a>
-                </div>
-            </div>
-        </div>
-
         <div class="chat-container">
             <header>
-                <h1>Assistente Especialista API WhatsApp Business</h1>
-                <p>Pergunte sobre a API, estratégias, custos e mais!</p>
+                <div class="header-content">
+                    <div class="header-title">
+                        <h1>Assistente Especialista API WhatsApp Business</h1>
+                        <p>Pergunte sobre a API, estratégias, custos e mais!</p>
+                    </div>
+                    <div class="header-tools">
+                        <a href="/history" class="tool-button history-button">
+                            <i class="fas fa-history"></i> Histórico
+                        </a>
+                        <a href="/calculadora" class="tool-button">
+                            <i class="fas fa-calculator"></i> Calculadora
+                        </a>
+                        <a href="https://wa.me/558197498268?text=Olá%2C%20gostaria%20de%20mais%20informações%20sobre%20a%20API%20do%20WhatsApp%20Business." class="tool-button contact-button" target="_blank">
+                            <i class="fab fa-whatsapp"></i> Falar com Desenvolvedor
+                        </a>
+                        <a href="/logout" class="tool-button logout-button">
+                            <i class="fas fa-sign-out-alt"></i> Sair
+                        </a>
+                    </div>
+                </div>
             </header>
             <div class="chat-box" id="chatBox">
                 <!-- Mensagens do chat aparecerão aqui -->
