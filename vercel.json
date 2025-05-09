@@ -2,18 +2,14 @@
   "version": 2,
   "builds": [
     {
-      "src": "api/wsgi.py",
-      "use": "@vercel/python"
+      "src": "Dockerfile",
+      "use": "@vercel/docker"
     }
   ],
   "routes": [
     {
       "src": "/(.*)",
-      "dest": "api/wsgi.py"
+      "dest": "/"
     }
-  ],
-  "env": {
-    "PYTHONPATH": "."
-  },
-  "installCommand": "pip install flask"
+  ]
 }
