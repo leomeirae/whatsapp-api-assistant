@@ -76,6 +76,7 @@ def process_question(user_question):
     relevant_context = get_relevant_context(user_question, KNOWLEDGE_BASE_TEXT)
 
     # Inicializar o cliente OpenAI
+    # Removendo qualquer configuração de proxy que possa estar causando problemas
     client = OpenAI(api_key=OPENAI_API_KEY)
 
     # Criar o sistema de prompt e o prompt do usuário
