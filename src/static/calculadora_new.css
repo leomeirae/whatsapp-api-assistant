@@ -193,8 +193,8 @@ body {
 
 .control-btn {
     width: 40px;
-    height: 40px;
-    border-radius: 50%;
+    height: 20px;
+    border-radius: 100%;
     border: none;
     background-color: var(--primary-color);
     color: white;
@@ -385,32 +385,32 @@ body {
     .calculator-container {
         padding: 20px 15px;
     }
-    
+
     .calculator-header h1 {
         font-size: 2rem;
     }
-    
+
     .calculator-box {
         padding: 25px;
     }
-    
+
     .item-info, .item-controls, .item-total {
         flex: 0 0 100%;
     }
-    
+
     .item-controls {
         margin: 15px 0;
     }
-    
+
     .item-total {
         text-align: left;
     }
-    
+
     .calculator-actions {
         flex-direction: column;
         gap: 15px;
     }
-    
+
     .action-btn {
         width: 100%;
         justify-content: center;

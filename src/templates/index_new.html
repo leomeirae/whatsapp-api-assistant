@@ -62,8 +62,10 @@
             const headerTools = document.getElementById("headerTools");
 
             // Função para alternar a visibilidade do menu
-            menuToggle.addEventListener("click", function() {
+            menuToggle.addEventListener("click", function(event) {
+                event.stopPropagation(); // Impedir propagação do evento
                 headerTools.classList.toggle("visible");
+                console.log("Menu toggle clicked, visible:", headerTools.classList.contains("visible"));
             });
 
             // Fechar o menu quando um link é clicado
@@ -76,9 +78,15 @@
 
             // Fechar o menu quando clicar fora dele
             document.addEventListener("click", function(event) {
-                if (!headerTools.contains(event.target) && event.target !== menuToggle) {
+                // Verificar se o clique não foi no menu ou no botão de menu
+                if (!headerTools.contains(event.target) && !menuToggle.contains(event.target)) {
                     headerTools.classList.remove("visible");
                 }
+            });
+
+            // Impedir que cliques no menu fechem o menu
+            headerTools.addEventListener("click", function(event) {
+                event.stopPropagation();
             });
         });
     </script>
