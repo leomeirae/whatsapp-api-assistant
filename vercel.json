@@ -30,5 +30,6 @@
   ],
   "env": {
     "PYTHONPATH": "."
-  }
+  },
+  "installCommand": "pip install -r requirements-vercel.txt"
 }

@@ -10,7 +10,8 @@ load_dotenv()
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 # Importar a função de processamento de perguntas
-from src.main import process_question
+# Importar a versão simplificada para o Vercel
+from src.vercel_main import process_question
 
 # Obter o diretório raiz do projeto
 ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
