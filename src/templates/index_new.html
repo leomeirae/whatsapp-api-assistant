@@ -17,7 +17,7 @@
                         <h1>Assistente Especialista API WhatsApp Business</h1>
                         <p>Pergunte sobre a API, estratégias, custos e mais!</p>
                     </div>
-                    <div class="header-tools">
+                    <div class="header-tools" id="headerTools">
                         <a href="/history" class="tool-button history-button">
                             <i class="fas fa-history"></i> Histórico
                         </a>
@@ -46,8 +46,41 @@
         </div>
     </div>
 
+    <!-- Botão de menu para dispositivos móveis -->
+    <button class="menu-toggle" id="menuToggle">
+        <i class="fas fa-bars"></i>
+    </button>
+
     <!-- Biblioteca para processar Markdown -->
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <script src="{{ url_for('static', filename='script.js') }}"></script>
+
+    <!-- Script para controlar o menu em dispositivos móveis -->
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            const menuToggle = document.getElementById("menuToggle");
+            const headerTools = document.getElementById("headerTools");
+
+            // Função para alternar a visibilidade do menu
+            menuToggle.addEventListener("click", function() {
+                headerTools.classList.toggle("visible");
+            });
+
+            // Fechar o menu quando um link é clicado
+            const toolButtons = document.querySelectorAll(".tool-button");
+            toolButtons.forEach(button => {
+                button.addEventListener("click", function() {
+                    headerTools.classList.remove("visible");
+                });
+            });
+
+            // Fechar o menu quando clicar fora dele
+            document.addEventListener("click", function(event) {
+                if (!headerTools.contains(event.target) && event.target !== menuToggle) {
+                    headerTools.classList.remove("visible");
+                }
+            });
+        });
+    </script>
 </body>
 </html>
