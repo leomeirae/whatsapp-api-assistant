@@ -4,9 +4,25 @@
     {
       "src": "api/index.py",
       "use": "@vercel/python"
+    },
+    {
+      "src": "src/static/**",
+      "use": "@vercel/static"
     }
   ],
   "routes": [
+    {
+      "src": "/static/(.*)",
+      "dest": "/src/static/$1"
+    },
+    {
+      "src": "/ask",
+      "dest": "/api/index.py"
+    },
+    {
+      "src": "/calculadora",
+      "dest": "/api/index.py"
+    },
     {
       "src": "/(.*)",
       "dest": "/api/index.py"
