@@ -2,7 +2,7 @@ import os
 import re
 from openai import OpenAI
 from dotenv import load_dotenv
-from src.simple_search import load_knowledge_base, get_relevant_context
+from src.simple_search_vercel import load_knowledge_base, get_relevant_context
 
 # Carregar variáveis de ambiente
 load_dotenv()
