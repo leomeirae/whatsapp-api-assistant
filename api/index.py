@@ -1,16 +1,17 @@
-from flask import Flask, jsonify
+import sys
+import os
 
-# Criar uma instância simples do Flask
-app = Flask(__name__)
+# Adiciona o diretório raiz ao sys.path para permitir importações corretas
+sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
 
-@app.route("/", methods=["GET"])
-def index():
-    """Rota de teste simples."""
-    return "WhatsApp API Assistant está funcionando!"
+# Importar o aplicativo principal do src/main.py
+from src.main import app
 
+# Rota de teste adicional para verificar se a API está funcionando
 @app.route("/api/test", methods=["GET"])
 def test():
     """Rota de teste para API."""
+    from flask import jsonify
     return jsonify({
         "status": "success",
         "message": "API está funcionando!"
