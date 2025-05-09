@@ -94,55 +94,32 @@ Se encontrar outros problemas, verifique as mensagens de erro no terminal onde o
 
 ## Implantação em Produção
 
-Este projeto está configurado para uma implantação dividida:
-- **Frontend estático**: Hospedado no Vercel
-- **Backend completo**: Hospedado no Render usando Docker
+Este projeto está configurado para ser implantado no Vercel como uma aplicação serverless.
 
-### Implantação no Vercel (Frontend)
+### Implantação no Vercel
 
-O frontend estático está configurado para ser implantado no Vercel:
+A aplicação está configurada para ser implantada no Vercel como uma função serverless:
 
-1. **Configuração Automática**:
-   * O arquivo `vercel.json` já está configurado para implantação estática.
-   * O arquivo `index.html` contém uma página de redirecionamento para o backend.
+1. **Configuração**:
+   - O arquivo `vercel.json` está configurado para usar o arquivo `api/index.py` como ponto de entrada.
+   - A aplicação Flask será executada como uma função serverless.
 
 2. **Passos para Implantação**:
-   * Conecte seu repositório GitHub ao Vercel.
-   * O Vercel detectará automaticamente a configuração e implantará o frontend.
-   * Não é necessário configurar variáveis de ambiente para o frontend.
-
-### Implantação no Render (Backend)
-
-O backend completo está configurado para ser implantado no Render usando Docker:
-
-1. **Usando o arquivo render.yaml**:
-   * O projeto inclui um arquivo `render.yaml` para configuração automática.
-   * No painel do Render, selecione "Blueprint" e conecte seu repositório.
-   * O Render detectará o arquivo `render.yaml` e configurará o serviço automaticamente.
-
-2. **Configuração Manual**:
-   * Conecte seu repositório GitHub ao Render.
-   * Selecione "Web Service" e escolha "Docker" como ambiente.
-   * Configure as variáveis de ambiente necessárias:
+   - Conecte seu repositório GitHub ao Vercel.
+   - Configure as seguintes variáveis de ambiente no painel do Vercel:
      - OPENAI_API_KEY
      - OPENAI_MODEL
      - SUPABASE_URL
      - SUPABASE_KEY
      - SUPABASE_SERVICE_KEY
      - SECRET_KEY
-
-3. **Usando Docker Localmente**:
-   * Para testar localmente antes de implantar:
-     ```bash
-     docker build -t whatsapp-api-assistant .
-     docker run -p 8080:8080 --env-file .env whatsapp-api-assistant
-     ```
+   - O Vercel detectará automaticamente a configuração e implantará a aplicação.
 
 ### Considerações de Segurança
 
-* Nunca armazene chaves de API diretamente no código.
-* Use variáveis de ambiente para todas as credenciais.
-* Configure HTTPS para proteger a comunicação (o Render e o Vercel já fazem isso automaticamente).
-* O sistema já inclui autenticação de usuários usando Supabase.
+- Nunca armazene chaves de API diretamente no código.
+- Use variáveis de ambiente para todas as credenciais.
+- Configure HTTPS para proteger a comunicação (o Vercel já faz isso automaticamente).
+- O sistema já inclui autenticação de usuários usando Supabase.
 
 Para mais informações sobre implantação, consulte a documentação do Flask e do Gunicorn.
