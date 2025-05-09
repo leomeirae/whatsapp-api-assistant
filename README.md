@@ -94,37 +94,55 @@ Se encontrar outros problemas, verifique as mensagens de erro no terminal onde o
 
 ## Implantação em Produção
 
-Para implantar a aplicação em um ambiente de produção, siga estas etapas:
+Este projeto está configurado para uma implantação dividida:
+- **Frontend estático**: Hospedado no Vercel
+- **Backend completo**: Hospedado no Render usando Docker
 
-1. **Configuração do Servidor WSGI (Gunicorn)**:
-   * O projeto já inclui o Gunicorn como servidor WSGI para produção.
-   * Use o arquivo `gunicorn_config.py` para configurar o Gunicorn:
-     ```bash
-     gunicorn -c gunicorn_config.py src.main:app
-     ```
+### Implantação no Vercel (Frontend)
 
-2. **Usando Docker**:
-   * O projeto inclui um Dockerfile para facilitar a implantação.
-   * Para construir a imagem Docker:
+O frontend estático está configurado para ser implantado no Vercel:
+
+1. **Configuração Automática**:
+   * O arquivo `vercel.json` já está configurado para implantação estática.
+   * O arquivo `index.html` contém uma página de redirecionamento para o backend.
+
+2. **Passos para Implantação**:
+   * Conecte seu repositório GitHub ao Vercel.
+   * O Vercel detectará automaticamente a configuração e implantará o frontend.
+   * Não é necessário configurar variáveis de ambiente para o frontend.
+
+### Implantação no Render (Backend)
+
+O backend completo está configurado para ser implantado no Render usando Docker:
+
+1. **Usando o arquivo render.yaml**:
+   * O projeto inclui um arquivo `render.yaml` para configuração automática.
+   * No painel do Render, selecione "Blueprint" e conecte seu repositório.
+   * O Render detectará o arquivo `render.yaml` e configurará o serviço automaticamente.
+
+2. **Configuração Manual**:
+   * Conecte seu repositório GitHub ao Render.
+   * Selecione "Web Service" e escolha "Docker" como ambiente.
+   * Configure as variáveis de ambiente necessárias:
+     - OPENAI_API_KEY
+     - OPENAI_MODEL
+     - SUPABASE_URL
+     - SUPABASE_KEY
+     - SUPABASE_SERVICE_KEY
+     - SECRET_KEY
+
+3. **Usando Docker Localmente**:
+   * Para testar localmente antes de implantar:
      ```bash
      docker build -t whatsapp-api-assistant .
-     ```
-   * Para executar o contêiner:
-     ```bash
      docker run -p 8080:8080 --env-file .env whatsapp-api-assistant
      ```
 
-3. **Implantação no Render**:
-   * Conecte seu repositório GitHub ao Render.
-   * Selecione "Web Service" e configure:
-     - Build Command: `pip install -r requirements.txt`
-     - Start Command: `gunicorn src.main:app`
-   * Configure as variáveis de ambiente necessárias (OPENAI_API_KEY, OPENAI_MODEL).
+### Considerações de Segurança
 
-4. **Considerações de Segurança**:
-   * Nunca armazene chaves de API diretamente no código.
-   * Use variáveis de ambiente para todas as credenciais.
-   * Configure HTTPS para proteger a comunicação.
-   * Considere adicionar autenticação para proteger o acesso à API.
+* Nunca armazene chaves de API diretamente no código.
+* Use variáveis de ambiente para todas as credenciais.
+* Configure HTTPS para proteger a comunicação (o Render e o Vercel já fazem isso automaticamente).
+* O sistema já inclui autenticação de usuários usando Supabase.
 
 Para mais informações sobre implantação, consulte a documentação do Flask e do Gunicorn.

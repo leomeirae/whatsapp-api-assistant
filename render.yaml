@@ -1,0 +1,21 @@
+services:
+  - type: web
+    name: whatsapp-api-assistant
+    env: docker
+    repo: https://github.com/leomeirae/whatsapp-api-assistant.git
+    branch: master
+    buildCommand: docker build -t whatsapp-api-assistant .
+    startCommand: docker run -p $PORT:8080 whatsapp-api-assistant
+    envVars:
+      - key: OPENAI_API_KEY
+        sync: false
+      - key: OPENAI_MODEL
+        value: gpt-4o-mini
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_KEY
+        sync: false
+      - key: SUPABASE_SERVICE_KEY
+        sync: false
+      - key: SECRET_KEY
+        generateValue: true
