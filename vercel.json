@@ -6,7 +6,8 @@
       "use": "@vercel/python",
       "config": {
         "maxLambdaSize": "15mb",
-        "runtime": "python3.9"
+        "runtime": "python3.9",
+        "excludeFiles": "{.next,*.cache,node_modules,public,app,venv,__pycache__,*.pyc,*.pyo,*.pyd,tests,images,*.jpg,*.jpeg,*.png,*.gif}/**"
       }
     }
   ],
@@ -15,12 +16,5 @@
       "src": "/(.*)",
       "dest": "api/index.py"
     }
-  ],
-  "functions": {
-    "api/index.py": {
-      "memory": 1024,
-      "maxDuration": 10,
-      "excludeFiles": "{.next,*.cache,node_modules,public,app,venv,__pycache__,*.pyc,*.pyo,*.pyd,tests,images,*.jpg,*.jpeg,*.png,*.gif}/**"
-    }
-  }
+  ]
 }
