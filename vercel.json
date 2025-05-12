@@ -6,7 +6,8 @@
       "use": "@vercel/python",
       "config": {
         "maxLambdaSize": "15mb",
-        "runtime": "python3.9"
+        "runtime": "python3.9",
+        "excludeFiles": "{.next,*.cache,node_modules,public,app,venv,__pycache__,*.pyc,*.pyo,*.pyd,tests,images,*.jpg,*.jpeg,*.png,*.gif,src/data,**/*.md,**/*.csv,**/*.xlsx,**/*.xls,**/*.db,**/*.sqlite3,**/*.jpg,**/*.jpeg,**/*.png,**/*.gif,**/*.svg,**/*.mp4,**/*.webm,**/*.mov,docs,README.md,LICENSE,CHANGELOG.md,scikit-learn,numpy,pandas,matplotlib,scipy,spacy,nltk,tensorflow,torch,transformers,browsergym,browser-use,gradio,instructor,jupyterlab,langchain,langgraph,mistralai,ollama,pydantic-ai,pydantic-graph,streamlit,thinc,wandb,zeep,PyMuPDF,PyPDF2,pytesseract,reportlab,seaborn,undetected-chromedriver,webdriver-manager}/**"
       }
     }
   ],
@@ -15,10 +16,5 @@
       "src": "/(.*)",
       "dest": "api/index.py"
     }
-  ],
-  "functions": {
-    "api/**": {
-      "excludeFiles": "{.next,*.cache,node_modules,public,app,venv,__pycache__,*.pyc,*.pyo,*.pyd,tests,images,*.jpg,*.jpeg,*.png,*.gif,src/data,**/*.md,**/*.csv,**/*.xlsx,**/*.xls,**/*.db,**/*.sqlite3,**/*.jpg,**/*.jpeg,**/*.png,**/*.gif,**/*.svg,**/*.mp4,**/*.webm,**/*.mov,docs,README.md,LICENSE,CHANGELOG.md,scikit-learn,numpy,pandas,matplotlib,scipy,spacy,nltk,tensorflow,torch,transformers,browsergym,browser-use,gradio,instructor,jupyterlab,langchain,langgraph,mistralai,ollama,pydantic-ai,pydantic-graph,streamlit,thinc,wandb,zeep,PyMuPDF,PyPDF2,pytesseract,reportlab,seaborn,undetected-chromedriver,webdriver-manager}/**"
-    }
-  }
+  ]
 }
