@@ -41,3 +41,44 @@ Thumbs.db
 .vscode/
 *.swp
 *.swo
+
+# Ignorar imagens e mídia
+*.jpg
+*.jpeg
+*.png
+*.gif
+*.svg
+*.mp4
+*.webm
+*.mov
+
+# Ignorar arquivos grandes
+*.csv
+*.xlsx
+*.xls
+*.db
+*.sqlite3
+
+# Ignorar arquivos de teste
+tests/
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Ignorar documentação
+docs/
+README.md
+LICENSE
+CHANGELOG.md
+
+# Ignorar pacotes não utilizados no Vercel
+scikit-learn/
+numpy/
+pandas/
+matplotlib/
+scipy/
+spacy/
+nltk/
+tensorflow/
+torch/
+transformers/
